@@ -429,9 +429,12 @@ function getRankings(){
 }
 
 // ═══════════════════════════════════════════
-// FETCH FROM OPENFOOTBALL — free, public domain, NO API KEY
+// FETCH — worldcup26.ir (real-time, no auth needed for /get/games)
+// Falls back to openfootball for group data if needed
 // ═══════════════════════════════════════════
-const API_URL = 'https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json';
+const API_GAMES = 'https://worldcup26.ir/get/games';
+const API_GROUPS = 'https://worldcup26.ir/get/groups';
+const OPENFOOTBALL = 'https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json';
 
 async function refresh(silent=false){
   const btn=document.getElementById('refresh-btn');
@@ -447,11 +450,28 @@ async function refresh(silent=false){
   }
 
   try{
-    const res = await fetch(API_URL+'?t='+Date.now());
-    if(!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
+    // Try worldcup26.ir first (real-time, has knockout data)
+    let matches = [];
+    let source = 'worldcup26.ir';
+    try {
+      const [gamesRes, groupsRes] = await Promise.all([
+        fetch(API_GAMES+'?t='+Date.now()),
+        fetch(API_GROUPS+'?t='+Date.now()),
+      ]);
+      if(!gamesRes.ok) throw new Error('worldcup26 unavailable');
+      const gamesJson = await gamesRes.json();
+      const groupsJson = groupsRes.ok ? await groupsRes.json() : null;
+      matches = normaliseWorldcup26(gamesJson, groupsJson);
+    } catch(e) {
+      // Fallback to openfootball
+      source = 'openfootball';
+      const res = await fetch(OPENFOOTBALL+'?t='+Date.now());
+      if(!res.ok) throw new Error(`Both sources failed`);
+      const json = await res.json();
+      matches = json.matches || [];
+    }
 
-    processMatches(json.matches||[]);
+    processMatches(matches, source);
     saveState();
     renderAll();
 
@@ -481,9 +501,73 @@ async function refresh(silent=false){
 }
 
 // ═══════════════════════════════════════════
+// NORMALISE worldcup26.ir format → our internal format
+// worldcup26.ir games have: home_team, away_team, home_score, away_score,
+// stage (group/round_of_32/round_of_16/quarter_final/semi_final/third_place/final),
+// group (e.g. "A"), date
+// ═══════════════════════════════════════════
+// Map worldcup26.ir team names to our ids
+const WC26_NAME_MAP = {
+  "Mexico":"mexico","South Africa":"south-africa","South Korea":"korea","Korea Republic":"korea",
+  "Czech Republic":"czechia","Czechia":"czechia",
+  "Canada":"canada","Bosnia and Herzegovina":"bosnia","Bosnia & Herzegovina":"bosnia",
+  "Qatar":"qatar","Switzerland":"switzerland",
+  "Brazil":"brazil","Morocco":"morocco","Haiti":"haiti","Scotland":"scotland",
+  "United States":"usa","USA":"usa","Paraguay":"paraguay","Australia":"australia",
+  "Turkey":"turkey","Türkiye":"turkey",
+  "Germany":"germany","Curaçao":"curacao","Curacao":"curacao",
+  "Ivory Coast":"ivory-coast","Côte d'Ivoire":"ivory-coast","Cote d'Ivoire":"ivory-coast",
+  "Ecuador":"ecuador","Netherlands":"netherlands","Japan":"japan",
+  "Tunisia":"tunisia","Sweden":"sweden",
+  "Belgium":"belgium","Egypt":"egypt","Iran":"iran","IR Iran":"iran",
+  "New Zealand":"new-zealand","Spain":"spain","Cape Verde":"cabo-verde","Cabo Verde":"cabo-verde",
+  "Saudi Arabia":"saudi-arabia","Uruguay":"uruguay",
+  "France":"france","Senegal":"senegal","Norway":"norway","Iraq":"iraq",
+  "Argentina":"argentina","Algeria":"algeria","Austria":"austria","Jordan":"jordan",
+  "Portugal":"portugal","Uzbekistan":"uzbekistan","Colombia":"colombia",
+  "DR Congo":"dr-congo","Democratic Republic of Congo":"dr-congo",
+  "England":"england","Croatia":"croatia","Ghana":"ghana","Panama":"panama",
+};
+
+const STAGE_TYPE_MAP = {
+  'group':'group',
+  'round_of_32':'Round of 32',
+  'round_of_16':'Round of 16',
+  'quarter_final':'Quarter-final',
+  'semi_final':'Semi-final',
+  'third_place':'Third place',
+  'final':'Final',
+};
+
+function normaliseWorldcup26(games, groups){
+  if(!Array.isArray(games)) games = games.games || games.matches || [];
+  return games.map(m=>{
+    const isGroup = m.stage==='group' || m.group;
+    const hasScore = m.home_score !== null && m.home_score !== undefined
+                  && m.away_score !== null && m.away_score !== undefined;
+    return {
+      team1: m.home_team || m.home_team_name || '',
+      team2: m.away_team || m.away_team_name || '',
+      date:  (m.date||'').slice(0,10),
+      group: isGroup ? `Group ${m.group||''}` : null,
+      round: STAGE_TYPE_MAP[m.stage] || m.stage || '',
+      ground: m.stadium || m.venue || '',
+      score: hasScore ? { ft: [m.home_score, m.away_score] } : null,
+      _nameMap: WC26_NAME_MAP, // pass alternate map
+    };
+  });
+}
+
+// ═══════════════════════════════════════════
 // PROCESS MATCH DATA → update teamState
 // ═══════════════════════════════════════════
-function processMatches(matches){
+function resolveTeam(name, m){
+  // Use per-match name map if available (worldcup26.ir), else fall back to NAME_MAP
+  const map = m._nameMap || NAME_MAP;
+  return map[name] || NAME_MAP[name] || null;
+}
+
+function processMatches(matches, source){
   matchData = matches;
 
   // Full reset of all computed fields each time
@@ -509,8 +593,8 @@ function processMatches(matches){
 
   groupMatches.forEach(m=>{
     if(!m.score || !m.score.ft) return;
-    const id1 = NAME_MAP[m.team1];
-    const id2 = NAME_MAP[m.team2];
+    const id1 = resolveTeam(m.team1, m);
+    const id2 = resolveTeam(m.team2, m);
     if(!id1||!id2) return;
     const s1=parseInt(m.score.ft[0]), s2=parseInt(m.score.ft[1]);
 
@@ -555,7 +639,7 @@ function processMatches(matches){
 
   const knockoutMatches = matches.filter(m=>!m.group);
   knockoutMatches.forEach(m=>{
-    const id1=NAME_MAP[m.team1], id2=NAME_MAP[m.team2];
+    const id1=resolveTeam(m.team1, m), id2=resolveTeam(m.team2, m);
     if(!id1||!id2) return;
     const round=(m.round||'').toLowerCase();
 
