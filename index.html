@@ -207,6 +207,12 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .leg-dot[data-p="4"]{background:var(--p4)}
 .leg-dot[data-p="5"]{background:var(--p5)}
 
+/* Points breakdown on player cards */
+.breakdown{display:flex;gap:6px;justify-content:center;margin:6px 0 2px;flex-wrap:wrap}
+.bk{font-size:10px;padding:2px 8px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-family:'DM Mono',monospace;white-space:nowrap}
+.bk span{color:var(--text);font-weight:500}
+.breakdown-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+
 /* MOBILE */
 @media(max-width:680px){
   .podium{grid-template-columns:1fr 1fr}
@@ -423,6 +429,26 @@ function teamTotal(id){
   return (parseInt(s.groupPts)||0)+(STAGE_PTS[s.stage]||0);
 }
 function playerTotal(idx){ return TEAMS.filter(t=>t.owner===idx).reduce((sum,t)=>sum+teamTotal(t.id),0); }
+
+function playerBreakdown(idx){
+  const teams = TEAMS.filter(t=>t.owner===idx);
+  const groupPts = teams.reduce((sum,t)=>sum+(parseInt(teamState[t.id]?.groupPts)||0),0);
+
+  // Knockout bonus per round — only count each stage's incremental bonus
+  // qualified=+3, ro16=+4 more, quarters=+5 more, then top4 bonuses
+  const INCREMENTAL = { out:0,'group-elim':0, qualified:3, ro16:4, quarters:5, "4th":7, "3rd":8, final:9, winner:10 };
+  let ro32=0, ro16=0, qtr=0, top4=0;
+  teams.forEach(t=>{
+    const stage = teamState[t.id]?.stage || 'out';
+    const rank = ['out','group-elim','qualified','ro16','quarters','4th','3rd','final','winner'].indexOf(stage);
+    if(rank >= 2) ro32 += 3;   // qualified
+    if(rank >= 3) ro16 += 4;   // reached ro16
+    if(rank >= 4) qtr  += 5;   // reached quarters
+    if(rank >= 5) top4 += INCREMENTAL[stage]||0; // 4th/3rd/final/winner bonus
+  });
+
+  return { groupPts, ro32, ro16, qtr, top4, total: groupPts+ro32+ro16+qtr+top4 };
+}
 function getRankings(){
   return PLAYERS.map((name,i)=>({name,idx:i,pts:playerTotal(i),teams:TEAMS.filter(t=>t.owner===i)}))
     .sort((a,b)=>b.pts-a.pts);
@@ -557,16 +583,18 @@ function processMatches(matches){
   knockoutMatches.forEach(m=>{
     const id1=NAME_MAP[m.team1], id2=NAME_MAP[m.team2];
     if(!id1||!id2) return;
-    const round=(m.round||'').toLowerCase();
+    const round=(m.round||'').toLowerCase().trim();
 
-    // Both teams get credit for REACHING this round
+    // Catch all openfootball round label variants
     let reachedStage='qualified';
-    if(round.includes('round of 32')||round.includes('ro32')) reachedStage='qualified';
-    else if(round.includes('round of 16')||round.includes('ro16')) reachedStage='ro16';
+    if(round.includes('round of 32')||round.includes('ro32')||round==='round 1'||round.includes('matchday 4')) reachedStage='qualified';
+    else if(round.includes('round of 16')||round.includes('ro16')||round.includes('round 2')) reachedStage='ro16';
     else if(round.includes('quarter')) reachedStage='quarters';
     else if(round.includes('semi')) reachedStage='quarters';
-    else if(round.includes('third')||round.includes('3rd')||round.includes('bronze')) reachedStage='quarters';
+    else if(round.includes('third')||round.includes('3rd')||round.includes('bronze')||round.includes('third place')) reachedStage='quarters';
     else if(round.includes('final')) reachedStage='quarters';
+    // fallback: any knockout match = at minimum qualified
+    else reachedStage='qualified';
 
     setStageIfHigher(id1, reachedStage);
     setStageIfHigher(id2, reachedStage);
@@ -599,24 +627,36 @@ function renderLeaderboard(){
 
   document.getElementById('podium-wrap').innerHTML=`
     <div class="podium">
-      ${top3.map((p,i)=>`
+      ${top3.map((p,i)=>{
+        const bd=playerBreakdown(p.idx);
+        return `
         <div class="pc" data-p="${p.idx}">
           <span class="medal">${MEDALS[i]}</span>
           <div class="pname">${p.name}</div>
           <div class="pscore">${p.pts}</div>
           <div class="plabel">Points</div>
+          <div class="breakdown">
+            <div class="bk">⚽ Group <span>${bd.groupPts}</span></div>
+            ${bd.ro32>0?`<div class="bk">Ro32 <span>+${bd.ro32}</span></div>`:''}
+            ${bd.ro16>0?`<div class="bk">Ro16 <span>+${bd.ro16}</span></div>`:''}
+            ${bd.qtr>0?`<div class="bk">QF <span>+${bd.qtr}</span></div>`:''}
+            ${bd.top4>0?`<div class="bk">🏆 <span>+${bd.top4}</span></div>`:''}
+          </div>
           <div class="chips">${p.teams.map(t=>{
             const s=teamState[t.id]||{stage:'out'};
             const sm=STAGE_META[s.stage]||STAGE_META.out;
             const isElim=dataLoaded && sm.eliminated;
             return `<div class="chip${isElim?' elim':''}">${t.flag} ${t.name}</div>`;
           }).join('')}</div>
-        </div>`).join('')}
+        </div>`;
+      }).join('')}
     </div>`;
 
   document.getElementById('rest-wrap').innerHTML=`
     <div class="rest-list">
-      ${rest.map((p,i)=>`
+      ${rest.map((p,i)=>{
+        const bd=playerBreakdown(p.idx);
+        return `
         <div class="rr" data-p="${p.idx}">
           <div class="pos">${i+4}</div>
           <div class="rname">${p.name}</div>
@@ -628,8 +668,16 @@ function renderLeaderboard(){
               const isElim=dataLoaded && sm.eliminated;
               return `<div class="chip${isElim?' elim':''}">${t.flag} ${t.name}</div>`;
             }).join('')}
+            <div class="breakdown-row">
+              <div class="bk">⚽ <span>${bd.groupPts}</span></div>
+              ${bd.ro32>0?`<div class="bk">Ro32 <span>+${bd.ro32}</span></div>`:''}
+              ${bd.ro16>0?`<div class="bk">Ro16 <span>+${bd.ro16}</span></div>`:''}
+              ${bd.qtr>0?`<div class="bk">QF <span>+${bd.qtr}</span></div>`:''}
+              ${bd.top4>0?`<div class="bk">🏆 <span>+${bd.top4}</span></div>`:''}
+            </div>
           </div>
-        </div>`).join('')}
+        </div>`;
+      }).join('')}
     </div>`;
 }
 
