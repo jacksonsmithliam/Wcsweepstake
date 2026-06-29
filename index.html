@@ -523,14 +523,17 @@ function processMatches(matches){
   // ── GROUP STAGE ──────────────────────────────
   const groupMatches = matches.filter(m=>m.group);
 
-  // Track how many group games have been played per group (to detect finished groups)
+  // Track how many group games are SCHEDULED per group (with or without scores)
+  // If all 6 are scheduled, the group stage is complete even if feed hasn't added scores yet
+  const groupGamesScheduled = {};
   const groupGamesPlayed = {};
   groupMatches.forEach(m=>{
+    groupGamesScheduled[m.group] = (groupGamesScheduled[m.group]||0) + 1;
     if(m.score && m.score.ft){
       groupGamesPlayed[m.group] = (groupGamesPlayed[m.group]||0) + 1;
     }
   });
-  // Each group of 4 teams has 6 total games — group is complete when all 6 are played
+  // Each group of 4 teams has 6 total games
   const GROUP_TOTAL_GAMES = 6;
 
   groupMatches.forEach(m=>{
@@ -557,8 +560,11 @@ function processMatches(matches){
   TEAMS.forEach(t=>{ (byGroup[`Group ${t.group}`]||(byGroup[`Group ${t.group}`]=[])).push(t); });
 
   Object.entries(byGroup).forEach(([grp, teams])=>{
+    const scheduled = groupGamesScheduled[grp]||0;
     const played = groupGamesPlayed[grp]||0;
-    if(played < GROUP_TOTAL_GAMES) return; // group not finished yet — don't mark anyone eliminated
+    // Group is complete if all 6 games are scheduled AND either all scored OR
+    // all 6 are in the feed (meaning matchday 3 has been added = group stage over)
+    if(scheduled < GROUP_TOTAL_GAMES) return; // group not fully scheduled yet
     // Sort by group pts descending to find top 2
     const sorted = [...teams].sort((a,b)=>(teamState[b.id].groupPts||0)-(teamState[a.id].groupPts||0));
     // Top 2 qualify, bottom 2 are out — but only set 'qualified' if not already in knockouts
