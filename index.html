@@ -422,10 +422,12 @@ let matchData  = [];
 let dataLoaded = false; // only show eliminated state after first successful fetch
 
 function initState(){
-  try{ const s=localStorage.getItem('wc2026_v4'); if(s) teamState=JSON.parse(s); }catch(e){}
+  // Clear any stale data from old versions
+  ['wc2026_v1','wc2026_v2','wc2026_v3','wc2026_v4'].forEach(k=>localStorage.removeItem(k));
+  try{ const s=localStorage.getItem('wc2026_v5'); if(s) teamState=JSON.parse(s); }catch(e){}
   TEAMS.forEach(t=>{ if(!teamState[t.id]) teamState[t.id]={groupPts:0,gamesPlayed:0,stage:'out',lastResult:''}; });
 }
-function saveState(){ localStorage.setItem('wc2026_v4',JSON.stringify(teamState)); }
+function saveState(){ localStorage.setItem('wc2026_v5',JSON.stringify(teamState)); }
 
 // ═══════════════════════════════════════════
 // SCORING
@@ -594,6 +596,7 @@ function processMatches(matches){
   const knockoutMatches = matches.filter(m=>!m.group);
   knockoutMatches.forEach(m=>{
     const id1=NAME_MAP[m.team1], id2=NAME_MAP[m.team2];
+    // Skip placeholder team names (e.g. "2A", "W74", "3A/B/C/D/F", "1E")
     if(!id1||!id2) return;
     const round=(m.round||'').toLowerCase().trim();
 
