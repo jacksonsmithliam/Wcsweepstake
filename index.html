@@ -213,6 +213,9 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .bk span{color:var(--text);font-weight:500}
 .breakdown-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 
+.clear-btn{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:7px 14px;border-radius:8px;background:transparent;border:1px solid var(--border2);color:var(--muted);cursor:pointer;transition:all .2s}
+.clear-btn:hover{border-color:var(--red);color:var(--red)}
+
 /* MOBILE */
 @media(max-width:680px){
   .podium{grid-template-columns:1fr 1fr}
@@ -245,6 +248,7 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
     <button class="refresh-btn" id="refresh-btn" onclick="refresh()">
       <span class="spin">⚽</span> Refresh Scores
     </button>
+    <button class="clear-btn" onclick="clearAndRefresh()">↺ Reset Data</button>
   </div>
 </header>
 
@@ -466,6 +470,16 @@ function getRankings(){
 // FETCH FROM OPENFOOTBALL — free, public domain, NO API KEY
 // ═══════════════════════════════════════════
 const API_URL = 'https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json';
+
+function clearAndRefresh(){
+  // Wipe all localStorage keys for this tracker
+  ['wc2026_v1','wc2026_v2','wc2026_v3','wc2026_v4','wc2026_v5','wc2026_v6','wc2026_ts','wc2026_time'].forEach(k=>localStorage.removeItem(k));
+  teamState = {};
+  TEAMS.forEach(t=>{ teamState[t.id]={groupPts:0,gamesPlayed:0,stage:'out',lastResult:''}; });
+  dataLoaded = false;
+  renderAll();
+  refresh();
+}
 
 async function refresh(silent=false){
   const btn=document.getElementById('refresh-btn');
