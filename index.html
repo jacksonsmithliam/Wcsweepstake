@@ -422,12 +422,12 @@ let matchData  = [];
 let dataLoaded = false; // only show eliminated state after first successful fetch
 
 function initState(){
-  // Clear any stale data from old versions
-  ['wc2026_v1','wc2026_v2','wc2026_v3','wc2026_v4'].forEach(k=>localStorage.removeItem(k));
-  try{ const s=localStorage.getItem('wc2026_v5'); if(s) teamState=JSON.parse(s); }catch(e){}
+  // Clear any stale data from all old versions — forces clean state
+  ['wc2026_v1','wc2026_v2','wc2026_v3','wc2026_v4','wc2026_v5'].forEach(k=>localStorage.removeItem(k));
+  try{ const s=localStorage.getItem('wc2026_v6'); if(s) teamState=JSON.parse(s); }catch(e){}
   TEAMS.forEach(t=>{ if(!teamState[t.id]) teamState[t.id]={groupPts:0,gamesPlayed:0,stage:'out',lastResult:''}; });
 }
-function saveState(){ localStorage.setItem('wc2026_v5',JSON.stringify(teamState)); }
+function saveState(){ localStorage.setItem('wc2026_v6',JSON.stringify(teamState)); }
 
 // ═══════════════════════════════════════════
 // SCORING
