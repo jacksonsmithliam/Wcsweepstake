@@ -386,10 +386,13 @@ const TEAM_BY_ID = Object.fromEntries(TEAMS.map(t=>[t.id,t]));
 // 4th/3rd/final/winner = top 4 finishes
 const STAGE_PTS = {
   out:          0,
-  'group-elim': 0,  // eliminated in group stage — no bonus
-  qualified:    3,
-  ro16:         3+4,
-  quarters:     3+4+5,
+  'group-elim': 0,
+  qualified:    3,   // reached knockouts
+  'out-ro32':   3,   // eliminated at Ro32 — still gets the +3 for qualifying
+  ro16:         3+4, // reached Ro16
+  'out-ro16':   3+4, // eliminated at Ro16
+  quarters:     3+4+5, // reached QF
+  'out-qf':     3+4+5, // eliminated at QF
   "4th":        3+4+5+7,
   "3rd":        3+4+5+8,
   final:        3+4+5+9,
@@ -397,15 +400,18 @@ const STAGE_PTS = {
 };
 
 const STAGE_META = {
-  out:          {label:"—",          cls:"s-out",  eliminated:false},
-  'group-elim': {label:"Out",        cls:"s-elim", eliminated:true},
-  qualified:    {label:"Knockouts",  cls:"s-q",    eliminated:false},
-  ro16:         {label:"Ro16",       cls:"s-r16",  eliminated:false},
-  quarters:     {label:"Quarters",   cls:"s-qtr",  eliminated:false},
-  "4th":        {label:"4th",        cls:"s-top4", eliminated:true},
-  "3rd":        {label:"3rd 🥉",     cls:"s-top4", eliminated:false},
-  final:        {label:"Final 🥈",   cls:"s-top4", eliminated:false},
-  winner:       {label:"🏆 Winner",  cls:"s-win",  eliminated:false},
+  out:          {label:"—",           cls:"s-out",  eliminated:false},
+  'group-elim': {label:"Out (Groups)",cls:"s-elim", eliminated:true},
+  qualified:    {label:"Knockouts",   cls:"s-q",    eliminated:false},
+  'out-ro32':   {label:"Out (Ro32)",  cls:"s-elim", eliminated:true},
+  ro16:         {label:"Ro16",        cls:"s-r16",  eliminated:false},
+  'out-ro16':   {label:"Out (Ro16)",  cls:"s-elim", eliminated:true},
+  quarters:     {label:"Quarters",    cls:"s-qtr",  eliminated:false},
+  'out-qf':     {label:"Out (QF)",    cls:"s-elim", eliminated:true},
+  "4th":        {label:"4th",         cls:"s-top4", eliminated:true},
+  "3rd":        {label:"3rd 🥉",      cls:"s-top4", eliminated:false},
+  final:        {label:"Final 🥈",    cls:"s-top4", eliminated:false},
+  winner:       {label:"🏆 Winner",   cls:"s-win",  eliminated:false},
 };
 
 // ═══════════════════════════════════════════
@@ -436,15 +442,15 @@ function playerBreakdown(idx){
 
   // Knockout bonus per round — only count each stage's incremental bonus
   // qualified=+3, ro16=+4 more, quarters=+5 more, then top4 bonuses
-  const INCREMENTAL = { out:0,'group-elim':0, qualified:3, ro16:4, quarters:5, "4th":7, "3rd":8, final:9, winner:10 };
+  const stageOrder = ['out','group-elim','qualified','out-ro32','ro16','out-ro16','quarters','out-qf','4th','3rd','final','winner'];
   let ro32=0, ro16=0, qtr=0, top4=0;
   teams.forEach(t=>{
     const stage = teamState[t.id]?.stage || 'out';
-    const rank = ['out','group-elim','qualified','ro16','quarters','4th','3rd','final','winner'].indexOf(stage);
-    if(rank >= 2) ro32 += 3;   // qualified
-    if(rank >= 3) ro16 += 4;   // reached ro16
-    if(rank >= 4) qtr  += 5;   // reached quarters
-    if(rank >= 5) top4 += INCREMENTAL[stage]||0; // 4th/3rd/final/winner bonus
+    const rank = stageOrder.indexOf(stage);
+    if(rank >= 2) ro32 += 3;   // qualified or beyond
+    if(rank >= 4) ro16 += 4;   // reached ro16 or beyond
+    if(rank >= 6) qtr  += 5;   // reached quarters or beyond
+    if(rank >= 8) top4 += STAGE_PTS[stage] - (3+4+5); // top4 incremental only
   });
 
   return { groupPts, ro32, ro16, qtr, top4, total: groupPts+ro32+ro16+qtr+top4 };
@@ -578,7 +584,7 @@ function processMatches(matches){
   });
 
   // ── KNOCKOUT STAGE ───────────────────────────
-  const STAGE_ORDER = ['out','group-elim','qualified','ro16','quarters','final','winner'];
+  const STAGE_ORDER = ['out','group-elim','qualified','out-ro32','ro16','out-ro16','quarters','out-qf','4th','3rd','final','winner'];
   function stageRank(s){ return STAGE_ORDER.indexOf(s); }
   function setStageIfHigher(id, stage){
     const current = teamState[id]?.stage || 'out';
@@ -591,20 +597,30 @@ function processMatches(matches){
     if(!id1||!id2) return;
     const round=(m.round||'').toLowerCase().trim();
 
-    // Catch all openfootball round label variants
+    // Determine which round this is
     let reachedStage='qualified';
-    if(round.includes('round of 32')||round.includes('ro32')||round==='round 1'||round.includes('matchday 4')) reachedStage='qualified';
-    else if(round.includes('round of 16')||round.includes('ro16')||round.includes('round 2')) reachedStage='ro16';
-    else if(round.includes('quarter')) reachedStage='quarters';
-    else if(round.includes('semi')) reachedStage='quarters';
-    else if(round.includes('third')||round.includes('3rd')||round.includes('bronze')||round.includes('third place')) reachedStage='quarters';
-    else if(round.includes('final')) reachedStage='quarters';
-    // fallback: any knockout match = at minimum qualified
-    else reachedStage='qualified';
+    let loserStage='out-ro32';
+    if(round.includes('round of 32')||round.includes('ro32')||round==='round 1'||round.includes('matchday 4')){
+      reachedStage='qualified'; loserStage='out-ro32';
+    } else if(round.includes('round of 16')||round.includes('ro16')||round.includes('round 2')){
+      reachedStage='ro16'; loserStage='out-ro16';
+    } else if(round.includes('quarter')){
+      reachedStage='quarters'; loserStage='out-qf';
+    } else if(round.includes('semi')){
+      reachedStage='quarters'; loserStage='out-qf';
+    } else if(round.includes('third')||round.includes('3rd')||round.includes('bronze')){
+      reachedStage='quarters'; loserStage='out-qf';
+    } else if(round.includes('final')){
+      reachedStage='quarters'; loserStage='out-qf';
+    } else {
+      reachedStage='qualified'; loserStage='out-ro32';
+    }
 
+    // Both teams get credit for reaching this round
     setStageIfHigher(id1, reachedStage);
     setStageIfHigher(id2, reachedStage);
 
+    // If result known, set winner advancing and loser eliminated
     if(!m.score || !m.score.ft) return;
     const s1=parseInt(m.score.ft[0]), s2=parseInt(m.score.ft[1]);
     const winner=s1>=s2?id1:id2;
@@ -616,6 +632,13 @@ function processMatches(matches){
     } else if(round.includes('third')||round.includes('3rd')||round.includes('bronze')){
       teamState[winner].stage='3rd';
       teamState[loser].stage='4th';
+    } else {
+      // Winner advances to next round stage, loser gets knocked out
+      const nextStage = reachedStage==='qualified' ? 'ro16'
+                      : reachedStage==='ro16'      ? 'quarters'
+                      : 'quarters';
+      setStageIfHigher(winner, nextStage);
+      teamState[loser].stage = loserStage;
     }
   });
 
