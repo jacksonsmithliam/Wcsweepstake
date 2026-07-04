@@ -30,7 +30,7 @@
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
-body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(ellipse 100% 50% at 50% -10%,rgba(240,192,64,0.07) 0%,transparent 60%),repeating-linear-gradient(90deg,transparent,t[...]
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(ellipse 100% 50% at 50% -10%,rgba(240,192,64,0.07) 0%,transparent 60%),repeating-linear-gradient(90deg,transparent,transparent 2px,rgba(74,158,255,0.03) 2px,rgba(74,158,255,0.03) 4px);pointer-events:none;z-index:0}
 .wrap{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:0 20px 80px}
 
 /* HEADER */
@@ -44,7 +44,7 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:5px;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
-.refresh-btn{display:flex;align-items:center;gap:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:11px 20px;border-radius:8[...]
+.refresh-btn{display:flex;align-items:center;gap:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:11px 20px;border-radius:8px;background:var(--gold);border:none;color:#060912;cursor:pointer;transition:all .2s}
 .refresh-btn:hover:not(:disabled){background:#ffe070;box-shadow:0 0 24px rgba(240,192,64,.4)}
 .refresh-btn:disabled{opacity:.5;cursor:not-allowed}
 .refresh-btn.loading .spin{animation:spin .8s linear infinite;display:inline-block}
@@ -60,7 +60,7 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 
 /* TABS */
 .tabs{display:flex;gap:2px;margin-bottom:24px;border-bottom:1px solid var(--border)}
-.tab{font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:11px 16px;background:none;border:none;cursor:pointer;color:var(--muted);position:relative;transition:color[...]
+.tab{font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:11px 16px;background:none;border:none;cursor:pointer;color:var(--muted);position:relative;transition:color .2s}
 .tab.active{color:var(--gold)}
 .tab.active::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--gold);border-radius:2px 2px 0 0}
 .tab:hover:not(.active){color:var(--text)}
@@ -92,7 +92,7 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .chip{font-size:10px;padding:2px 7px;border-radius:20px;background:var(--surface2);color:var(--muted);white-space:nowrap}
 
 .rest-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-bottom:16px}
-.rr{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px 16px;display:flex;align-items:center;gap:12px;position:relative;overflow:hidden;transition:transform .1[...]
+.rr{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px 16px;display:flex;align-items:center;gap:12px;position:relative;overflow:hidden;transition:transform .1s}
 .rr:hover{transform:translateX(3px)}
 .rr::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
 .rr[data-p="0"]::before{background:var(--p0)}
@@ -121,7 +121,7 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 
 /* TEAMS TAB */
 .pfilter{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px}
-.pf{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:5px 13px;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--muted);curs[...]
+.pf{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:5px 13px;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .2s}
 .pf.active{background:var(--gold);color:#060912;border-color:var(--gold)}
 .pf:hover:not(.active){border-color:var(--border2);color:var(--text)}
 
@@ -178,10 +178,10 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 
 /* MATCHES TAB */
 .matches-filter{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px}
-.mf{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:5px 13px;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--muted);curs[...]
+.mf{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:5px 13px;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .2s}
 .mf.active{background:var(--surface2);color:var(--text);border-color:var(--border2)}
 .matches-list{display:flex;flex-direction:column;gap:8px}
-.match-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;transition:ba[...]
+.match-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;transition:background .1s}
 .match-card:hover{background:var(--surface2)}
 .match-card.played{border-color:var(--border2)}
 .mt1{text-align:right}
@@ -213,8 +213,8 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .bk span{color:var(--text);font-weight:500}
 .breakdown-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 
-.clear-btn{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:7px 14px;border-radius:8px;background:transparent;border:1px solid v[...]
-.clear-btn:hover{border-color:var(--red);color:var(--red)}
+.clear-btn{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:7px 14px;border-radius:8px;background:transparent;border:1px solid var(--red);color:var(--red);cursor:pointer;transition:all .2s}
+.clear-btn:hover{border-color:var(--red);color:var(--red);background:rgba(232,69,69,.1)}
 
 /* MOBILE */
 @media(max-width:680px){
@@ -308,7 +308,6 @@ const PLAYERS = ["Emily","Krishiv","Davina","Herman","Liam","Taksh"];
 const MEDALS  = ["🥇","🥈","🥉"];
 
 // name as it appears in openfootball API → our team id
-// Also handles placeholder names like "UEFA Path D winner" until they resolve
 const NAME_MAP = {
   "Mexico":"mexico","South Africa":"south-africa","South Korea":"korea",
   "Czech Republic":"czechia","UEFA Path D winner":"czechia",
@@ -383,20 +382,15 @@ const TEAMS = [
 
 const TEAM_BY_ID = Object.fromEntries(TEAMS.map(t=>[t.id,t]));
 
-// Points awarded for REACHING each round (cumulative as they progress)
-// qualified = made it to knockouts (+3)
-// ro16      = reached Ro16 (+3+4 = 7 total bonus)
-// quarters  = reached QF (+3+4+5 = 12 total bonus)
-// 4th/3rd/final/winner = top 4 finishes
 const STAGE_PTS = {
   out:          0,
   'group-elim': 0,
-  qualified:    3,   // reached knockouts
-  'out-ro32':   3,   // eliminated at Ro32 — still gets the +3 for qualifying
-  ro16:         3+4, // reached Ro16
-  'out-ro16':   3+4, // eliminated at Ro16
-  quarters:     3+4+5, // reached QF
-  'out-qf':     3+4+5, // eliminated at QF
+  qualified:    3,
+  'out-ro32':   3,
+  ro16:         3+4,
+  'out-ro16':   3+4,
+  quarters:     3+4+5,
+  'out-qf':     3+4+5,
   "4th":        3+4+5+7,
   "3rd":        3+4+5+8,
   final:        3+4+5+9,
@@ -418,24 +412,17 @@ const STAGE_META = {
   winner:       {label:"🏆 Winner",   cls:"s-win",  eliminated:false},
 };
 
-// ═══════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════
 let teamState = {};
 let matchData  = [];
-let dataLoaded = false; // only show eliminated state after first successful fetch
+let dataLoaded = false;
 
 function initState(){
-  // Clear any stale data from all old versions — forces clean state
   ['wc2026_v1','wc2026_v2','wc2026_v3','wc2026_v4','wc2026_v5'].forEach(k=>localStorage.removeItem(k));
   try{ const s=localStorage.getItem('wc2026_v6'); if(s) teamState=JSON.parse(s); }catch(e){}
-  TEAMS.forEach(t=>{ if(!teamState[t.id]) teamState[t.id]={groupPts:0,gamesPlayed:0,stage:'out',lastResult:'',displayStage:'out'}; });
+  TEAMS.forEach(t=>{ if(!teamState[t.id]) teamState[t.id]={groupPts:0,gamesPlayed:0,stage:'out',lastResult:''}; });
 }
 function saveState(){ localStorage.setItem('wc2026_v6',JSON.stringify(teamState)); }
 
-// ═══════════════════════════════════════════
-// SCORING
-// ═══════════════════════════════════════════
 function teamTotal(id){
   const s=teamState[id]||{groupPts:0,stage:'out'};
   return (parseInt(s.groupPts)||0)+(STAGE_PTS[s.stage]||0);
@@ -445,20 +432,16 @@ function playerTotal(idx){ return TEAMS.filter(t=>t.owner===idx).reduce((sum,t)=
 function playerBreakdown(idx){
   const teams = TEAMS.filter(t=>t.owner===idx);
   const groupPts = teams.reduce((sum,t)=>sum+(parseInt(teamState[t.id]?.groupPts)||0),0);
-
-  // Knockout bonus per round — only count each stage's incremental bonus
-  // qualified=+3, ro16=+4 more, quarters=+5 more, then top4 bonuses
   const stageOrder = ['out','group-elim','qualified','out-ro32','ro16','out-ro16','quarters','out-qf','4th','3rd','final','winner'];
   let ro32=0, ro16=0, qtr=0, top4=0;
   teams.forEach(t=>{
     const stage = teamState[t.id]?.stage || 'out';
     const rank = stageOrder.indexOf(stage);
-    if(rank >= 2) ro32 += 3;   // qualified or beyond
-    if(rank >= 4) ro16 += 4;   // reached ro16 or beyond
-    if(rank >= 6) qtr  += 5;   // reached quarters or beyond
-    if(rank >= 8) top4 += STAGE_PTS[stage] - (3+4+5); // top4 incremental only
+    if(rank >= 2) ro32 += 3;
+    if(rank >= 4) ro16 += 4;
+    if(rank >= 6) qtr  += 5;
+    if(rank >= 8) top4 += STAGE_PTS[stage] - (3+4+5);
   });
-
   return { groupPts, ro32, ro16, qtr, top4, total: groupPts+ro32+ro16+qtr+top4 };
 }
 function getRankings(){
@@ -466,16 +449,12 @@ function getRankings(){
     .sort((a,b)=>b.pts-a.pts);
 }
 
-// ═══════════════════════════════════════════
-// FETCH FROM OPENFOOTBALL — free, public domain, NO API KEY
-// ═══════════════════════════════════════════
 const API_URL = 'https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json';
 
 function clearAndRefresh(){
-  // Wipe all localStorage keys for this tracker
   ['wc2026_v1','wc2026_v2','wc2026_v3','wc2026_v4','wc2026_v5','wc2026_v6','wc2026_ts','wc2026_time'].forEach(k=>localStorage.removeItem(k));
   teamState = {};
-  TEAMS.forEach(t=>{ teamState[t.id]={groupPts:0,gamesPlayed:0,stage:'out',lastResult:'',displayStage:'out'}; });
+  TEAMS.forEach(t=>{ teamState[t.id]={groupPts:0,gamesPlayed:0,stage:'out',lastResult:''}; });
   dataLoaded = false;
   renderAll();
   refresh();
@@ -528,26 +507,17 @@ async function refresh(silent=false){
   btn.disabled=false; btn.classList.remove('loading');
 }
 
-// ═══════════════════════════════════════════
-// PROCESS MATCH DATA → update teamState
-// ═══════════════════════════════════════════
 function processMatches(matches){
   matchData = matches;
 
-  // Full reset of all computed fields each time
   TEAMS.forEach(t=>{
     teamState[t.id].groupPts   = 0;
     teamState[t.id].gamesPlayed= 0;
     teamState[t.id].lastResult = '';
-    teamState[t.id].stage      = 'out'; // For POINTS: the highest achievement
-    teamState[t.id].displayStage = 'out'; // For DISPLAY: shows elimination status
+    teamState[t.id].stage      = 'out';
   });
 
-  // ── GROUP STAGE ──────────────────────────────
   const groupMatches = matches.filter(m=>m.group);
-
-  // Track how many group games are SCHEDULED per group (with or without scores)
-  // If all 6 are scheduled, the group stage is complete even if feed hasn't added scores yet
   const groupGamesScheduled = {};
   const groupGamesPlayed = {};
   groupMatches.forEach(m=>{
@@ -556,7 +526,6 @@ function processMatches(matches){
       groupGamesPlayed[m.group] = (groupGamesPlayed[m.group]||0) + 1;
     }
   });
-  // Each group of 4 teams has 6 total games
   const GROUP_TOTAL_GAMES = 6;
 
   groupMatches.forEach(m=>{
@@ -577,34 +546,22 @@ function processMatches(matches){
     else{ teamState[id2].lastResult=`L ${s2}-${s1} vs ${TEAM_BY_ID[id1]?.name||m.team1}`; }
   });
 
-  // Work out which teams qualified — top 2 per group
-  // Only do this when a group is complete (all 6 games played)
   const byGroup = {};
   TEAMS.forEach(t=>{ (byGroup[`Group ${t.group}`]||(byGroup[`Group ${t.group}`]=[])).push(t); });
 
   Object.entries(byGroup).forEach(([grp, teams])=>{
     const scheduled = groupGamesScheduled[grp]||0;
     const played = groupGamesPlayed[grp]||0;
-    // Group is complete if all 6 games are scheduled AND either all scored OR
-    // all 6 are in the feed (meaning matchday 3 has been added = group stage over)
-    if(scheduled < GROUP_TOTAL_GAMES) return; // group not fully scheduled yet
-    // Sort by group pts descending to find top 2
+    if(scheduled < GROUP_TOTAL_GAMES) return;
     const sorted = [...teams].sort((a,b)=>(teamState[b.id].groupPts||0)-(teamState[a.id].groupPts||0));
-    // Top 2 qualify, bottom 2 are out — but only set 'qualified' if not already in knockouts
     sorted.slice(0,2).forEach(t=>{
-      if(teamState[t.id].stage==='out') {
-        teamState[t.id].stage='qualified';
-        teamState[t.id].displayStage='qualified';
-      }
+      if(teamState[t.id].stage==='out') teamState[t.id].stage='qualified';
     });
-    // Bottom 2 stay 'out' — which already means eliminated once group is done
     sorted.slice(2).forEach(t=>{
-      teamState[t.id].stage='group-elim'; // reset for points
-      teamState[t.id].displayStage='group-elim'; // show as eliminated
+      teamState[t.id].stage='group-elim';
     });
   });
 
-  // ── KNOCKOUT STAGE ───────────────────────────
   const STAGE_ORDER = ['out','group-elim','qualified','out-ro32','ro16','out-ro16','quarters','out-qf','4th','3rd','final','winner'];
   function stageRank(s){ return STAGE_ORDER.indexOf(s); }
   function setStageIfHigher(id, stage){
@@ -615,11 +572,9 @@ function processMatches(matches){
   const knockoutMatches = matches.filter(m=>!m.group);
   knockoutMatches.forEach(m=>{
     const id1=NAME_MAP[m.team1], id2=NAME_MAP[m.team2];
-    // Skip placeholder team names (e.g. "2A", "W74", "3A/B/C/D/F", "1E")
     if(!id1||!id2) return;
     const round=(m.round||'').toLowerCase().trim();
 
-    // Determine which round this is
     let reachedStage='qualified';
     let loserStage='out-ro32';
     if(round.includes('round of 32')||round.includes('ro32')||round==='round 1'||round.includes('matchday 4')){
@@ -638,11 +593,9 @@ function processMatches(matches){
       reachedStage='qualified'; loserStage='out-ro32';
     }
 
-    // Both teams get credit for reaching this round in their STAGE (for points)
     setStageIfHigher(id1, reachedStage);
     setStageIfHigher(id2, reachedStage);
 
-    // If result known, set winner advancing and loser eliminated
     if(!m.score || !m.score.ft) return;
     const s1=parseInt(m.score.ft[0]), s2=parseInt(m.score.ft[1]);
     const winner=s1>=s2?id1:id2;
@@ -650,31 +603,22 @@ function processMatches(matches){
 
     if(round.includes('final') && !round.includes('third') && !round.includes('3rd') && !round.includes('bronze')){
       teamState[winner].stage='winner';
-      teamState[winner].displayStage='winner';
       teamState[loser].stage='final';
-      teamState[loser].displayStage='final';
     } else if(round.includes('third')||round.includes('3rd')||round.includes('bronze')){
       teamState[winner].stage='3rd';
-      teamState[winner].displayStage='3rd';
       teamState[loser].stage='4th';
-      teamState[loser].displayStage='4th';
     } else {
-      // Winner advances to next round stage, loser gets knocked out
       const nextStage = reachedStage==='qualified' ? 'ro16'
                       : reachedStage==='ro16'      ? 'quarters'
                       : 'quarters';
       setStageIfHigher(winner, nextStage);
-      // Loser keeps their high stage for points, but show as eliminated
-      teamState[loser].displayStage = loserStage;
+      teamState[loser].stage = loserStage;
     }
   });
 
   dataLoaded = true;
 }
 
-// ═══════════════════════════════════════════
-// RENDER
-// ═══════════════════════════════════════════
 function renderAll(){ renderLeaderboard(); renderTeams(); renderMatches(); }
 
 function renderLeaderboard(){
@@ -699,8 +643,8 @@ function renderLeaderboard(){
             ${bd.top4>0?`<div class="bk">🏆 <span>+${bd.top4}</span></div>`:''}
           </div>
           <div class="chips">${p.teams.map(t=>{
-            const s=teamState[t.id]||{displayStage:'out'};
-            const sm=STAGE_META[s.displayStage]||STAGE_META.out;
+            const s=teamState[t.id]||{stage:'out'};
+            const sm=STAGE_META[s.stage]||STAGE_META.out;
             const isElim=dataLoaded && sm.eliminated;
             return `<div class="chip${isElim?' elim':''}">${t.flag} ${t.name}</div>`;
           }).join('')}</div>
@@ -719,8 +663,8 @@ function renderLeaderboard(){
           <div class="rscore">${p.pts}</div>
           <div class="chips" style="flex:1;justify-content:flex-start;padding:0;border:none;margin:0">
             ${p.teams.map(t=>{
-              const s=teamState[t.id]||{displayStage:'out'};
-              const sm=STAGE_META[s.displayStage]||STAGE_META.out;
+              const s=teamState[t.id]||{stage:'out'};
+              const sm=STAGE_META[s.stage]||STAGE_META.out;
               const isElim=dataLoaded && sm.eliminated;
               return `<div class="chip${isElim?' elim':''}">${t.flag} ${t.name}</div>`;
             }).join('')}
@@ -752,13 +696,12 @@ function renderTeams(){
       <div class="gc-head"><h3>Group ${grp}</h3><span>${teams.length} team${teams.length>1?'s':''}</span></div>
       <div class="col-h"><span>Team</span><span>Pts</span><span>Stage</span><span>Total</span></div>
       ${teams.map(t=>{
-        const s=teamState[t.id]||{groupPts:0,gamesPlayed:0,displayStage:'out',lastResult:''};
-        const sm=STAGE_META[s.displayStage]||STAGE_META.out;
+        const s=teamState[t.id]||{groupPts:0,gamesPlayed:0,stage:'out',lastResult:''};
+        const sm=STAGE_META[s.stage]||STAGE_META.out;
         const gp=s.gamesPlayed||0;
         const pips=[0,1,2].map(i=>`<div class="dot${i<gp?' played':''}"></div>`).join('');
         const lr=s.lastResult||'';
         const lrCls=lr.startsWith('W')?'w':lr.startsWith('D')?'d':lr.startsWith('L')?'l':'';
-        // Only show eliminated if data has been fetched at least once
         const isElim = dataLoaded && sm.eliminated;
         const elimRow = isElim ? ' eliminated' : '';
         const stageLabel = `<span class="sb ${sm.cls}">${sm.label}</span>`;
@@ -792,7 +735,7 @@ function renderMatches(){
     const played = !!(m.score && m.score.ft);
     if(matchFilter==='played') return played;
     if(matchFilter==='upcoming') return !played;
-    return true; // all — include both group and knockout
+    return true;
   });
 
   const byDate={};
@@ -846,9 +789,6 @@ function renderMatches(){
   });
 }
 
-// ═══════════════════════════════════════════
-// FILTER BUTTONS
-// ═══════════════════════════════════════════
 function buildPlayerFilter(){
   const pf=document.getElementById('pfilter');
   PLAYERS.forEach((name,i)=>{
@@ -871,9 +811,6 @@ function buildMatchFilter(){
   });
 }
 
-// ═══════════════════════════════════════════
-// TABS
-// ═══════════════════════════════════════════
 document.querySelectorAll('.tab').forEach(btn=>{
   btn.addEventListener('click',()=>{
     document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
@@ -883,9 +820,6 @@ document.querySelectorAll('.tab').forEach(btn=>{
   });
 });
 
-// ═══════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════
 initState();
 buildPlayerFilter();
 buildMatchFilter();
@@ -898,13 +832,11 @@ if(cachedTime){
   if(leader?.pts>0) document.title=`🥇 ${leader.name} leads · WC2026`;
 }
 
-// Auto-fetch on load (skip if fetched in last 20 mins, otherwise always fetch fresh)
 (function autoFetch(){
   const last=parseInt(localStorage.getItem('wc2026_ts')||'0');
   if(Date.now()-last > 20*60*1000) refresh();
 })();
 
-// Background refresh every 30 mins while page stays open
 setInterval(()=>refresh(true), 30*60*1000);
 </script>
 </body>
