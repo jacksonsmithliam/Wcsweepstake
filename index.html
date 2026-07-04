@@ -641,22 +641,7 @@ function processMatches(matches){
                        : reachedStage==='ro16'      ? 'quarters'
                        : 'quarters';
       setStageIfHigher(winner, nextStage);
-      
-      // Mark team as eliminated
-      const ftScore1 = parseInt(m.score.ft?.[0]) || 0;
-      const ftScore2 = parseInt(m.score.ft?.[1]) || 0;
-      
-      // Check if the loser lost on penalties
-      if(ftScore1 === ftScore2 && m.score.pen){
-        const penScore1 = parseInt(m.score.pen[0]) || 0;
-        const penScore2 = parseInt(m.score.pen[1]) || 0;
-        if(penScore1 !== penScore2){
-          // Lost on penalties - always mark as eliminated
-          teamState[loser].stage = loserStage;
-        }
-      } else {
-        teamState[loser].stage = loserStage;
-      }
+      teamState[loser].stage = loserStage;
     }
   });
 
