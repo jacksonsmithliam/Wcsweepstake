@@ -134,9 +134,11 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .col-h span{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--muted2);text-align:center}
 .col-h span:first-child{text-align:left}
 .col-h span:last-child{text-align:right}
-.tr{display:grid;grid-template-columns:1fr 48px 78px 50px;align-items:center;padding:8px 16px;border-bottom:1px solid var(--border);gap:6px;transition:background .1s}
+.tr{display:grid;grid-template-columns:1fr 48px 78px 50px;align-items:center;padding:8px 16px;border-bottom:1px solid var(--border);gap:6px;transition:background .1s;opacity:1}
 .tr:last-child{border-bottom:none}
 .tr:hover{background:var(--surface2)}
+.tr.eliminated{opacity:.45;filter:grayscale(0.7)}
+.tr.eliminated .tname{text-decoration:line-through;text-decoration-color:var(--muted2)}
 .ti{display:flex;align-items:center;gap:7px}
 .pip{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .pip[data-p="0"]{background:var(--p0)}
@@ -190,6 +192,7 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .mt1 .mteam{justify-content:flex-end}
 .mteam .mflag{font-size:16px}
 .mteam .mowner{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.mteam.eliminated .mflag{filter:grayscale(1);opacity:.5}
 .mscore{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:var(--gold);text-align:center;min-width:60px}
 .mscore.pending{color:var(--muted2);font-size:14px;font-family:'DM Mono',monospace;letter-spacing:1px}
 .mmeta{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted2);text-align:center;margin-top:2px}
@@ -785,12 +788,19 @@ function renderMatches(){
       const t1=id1?TEAM_BY_ID[id1]:null;
       const t2=id2?TEAM_BY_ID[id2]:null;
       const played=!!(m.score && m.score.ft);
+      
+      const s1 = t1 ? (teamState[t1.id]?.stage || 'out') : 'out';
+      const s2 = t2 ? (teamState[t2.id]?.stage || 'out') : 'out';
+      const sm1 = STAGE_META[s1] || STAGE_META.out;
+      const sm2 = STAGE_META[s2] || STAGE_META.out;
+      const isT1Elim = dataLoaded && sm1.eliminated;
+      const isT2Elim = dataLoaded && sm2.eliminated;
 
       const card=document.createElement('div');
       card.className='match-card'+(played?' played':'');
       card.innerHTML=`
         <div class="mt1">
-          <div class="mteam">
+          <div class="mteam${isT1Elim?' eliminated':''}">
             ${t1?`<div class="mowner" style="background:var(--p${t1.owner})"></div>`:''}
             <span>${t1?t1.name:m.team1}</span>
             <span class="mflag">${t1?t1.flag:'🏳️'}</span>
@@ -803,7 +813,7 @@ function renderMatches(){
           <div class="mmeta">${m.group ? m.group.replace('Group ','Grp ') : (m.round||'Knockout')} · ${(m.ground||'').split('(')[0].trim()}</div>
         </div>
         <div class="mt2">
-          <div class="mteam">
+          <div class="mteam${isT2Elim?' eliminated':''}">
             <span class="mflag">${t2?t2.flag:'🏳️'}</span>
             <span>${t2?t2.name:m.team2}</span>
             ${t2?`<div class="mowner" style="background:var(--p${t2.owner})"></div>`:''}
