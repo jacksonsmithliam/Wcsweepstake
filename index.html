@@ -307,7 +307,6 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 const PLAYERS = ["Emily","Krishiv","Davina","Herman","Liam","Taksh"];
 const MEDALS  = ["🥇","🥈","🥉"];
 
-// name as it appears in openfootball API → our team id
 const NAME_MAP = {
   "Mexico":"mexico","South Africa":"south-africa","South Korea":"korea",
   "Czech Republic":"czechia","UEFA Path D winner":"czechia",
@@ -507,6 +506,30 @@ async function refresh(silent=false){
   btn.disabled=false; btn.classList.remove('loading');
 }
 
+// Helper function to determine winner, checking penalties if FT is drawn
+function getKnockoutWinner(m){
+  if(!m.score) return null;
+  
+  const ftScore1 = parseInt(m.score.ft?.[0]) || 0;
+  const ftScore2 = parseInt(m.score.ft?.[1]) || 0;
+  
+  // If FT score decides it, return winner
+  if(ftScore1 > ftScore2) return 1;
+  if(ftScore2 > ftScore1) return 2;
+  
+  // FT is a draw, check for penalties
+  if(m.score.pen){
+    const penScore1 = parseInt(m.score.pen[0]) || 0;
+    const penScore2 = parseInt(m.score.pen[1]) || 0;
+    
+    if(penScore1 > penScore2) return 1;
+    if(penScore2 > penScore1) return 2;
+  }
+  
+  // No winner determined yet
+  return null;
+}
+
 function processMatches(matches){
   matchData = matches;
 
@@ -596,10 +619,12 @@ function processMatches(matches){
     setStageIfHigher(id1, reachedStage);
     setStageIfHigher(id2, reachedStage);
 
-    if(!m.score || !m.score.ft) return;
-    const s1=parseInt(m.score.ft[0]), s2=parseInt(m.score.ft[1]);
-    const winner=s1>=s2?id1:id2;
-    const loser=s1>=s2?id2:id1;
+    // Use new function to determine winner with penalty support
+    const winnerNum = getKnockoutWinner(m);
+    if(!winnerNum) return; // No result yet
+    
+    const winner = winnerNum === 1 ? id1 : id2;
+    const loser = winnerNum === 1 ? id2 : id1;
 
     if(round.includes('final') && !round.includes('third') && !round.includes('3rd') && !round.includes('bronze')){
       teamState[winner].stage='winner';
