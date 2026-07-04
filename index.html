@@ -44,7 +44,7 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:5px;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
-.refresh-btn{display:flex;align-items:center;gap:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:11px 20px;border-radius:8px;background:var(--gold);border:none;color:#060912;cursor:pointer;transition:all .2s}
+.refresh-btn{display:flex;align-items:center;gap:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:11px 20px;border-radius:8px;background:var(--gold);color:#060912;border:none;cursor:pointer;transition:all .2s}
 .refresh-btn:hover:not(:disabled){background:#ffe070;box-shadow:0 0 24px rgba(240,192,64,.4)}
 .refresh-btn:disabled{opacity:.5;cursor:not-allowed}
 .refresh-btn.loading .spin{animation:spin .8s linear infinite;display:inline-block}
@@ -183,7 +183,7 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .mf{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:5px 13px;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .2s}
 .mf.active{background:var(--surface2);color:var(--text);border-color:var(--border2)}
 .matches-list{display:flex;flex-direction:column;gap:8px}
-.match-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;transition:background .1s}
+.match-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;transition:background .2s}
 .match-card:hover{background:var(--surface2)}
 .match-card.played{border-color:var(--border2)}
 .mt1{text-align:right}
@@ -196,6 +196,7 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .mscore{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:var(--gold);text-align:center;min-width:60px}
 .mscore.pending{color:var(--muted2);font-size:14px;font-family:'DM Mono',monospace;letter-spacing:1px}
 .mmeta{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted2);text-align:center;margin-top:2px}
+.mpenalty{font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:center;margin-top:1px}
 .mdate{display:flex;flex-direction:column;align-items:center;gap:2px}
 .mgroup-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:12px 0 6px;font-weight:600}
 
@@ -216,7 +217,7 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .bk span{color:var(--text);font-weight:500}
 .breakdown-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 
-.clear-btn{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:7px 14px;border-radius:8px;background:transparent;border:1px solid var(--red);color:var(--red);cursor:pointer;transition:all .2s}
+.clear-btn{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:7px 14px;border-radius:8px;background:transparent;border:1px solid var(--border2);color:var(--muted);cursor:pointer;transition:all .2s}
 .clear-btn:hover{border-color:var(--red);color:var(--red);background:rgba(232,69,69,.1)}
 
 /* MOBILE */
@@ -637,10 +638,25 @@ function processMatches(matches){
       teamState[loser].stage='4th';
     } else {
       const nextStage = reachedStage==='qualified' ? 'ro16'
-                      : reachedStage==='ro16'      ? 'quarters'
-                      : 'quarters';
+                       : reachedStage==='ro16'      ? 'quarters'
+                       : 'quarters';
       setStageIfHigher(winner, nextStage);
-      teamState[loser].stage = loserStage;
+      
+      // Mark team as eliminated
+      const ftScore1 = parseInt(m.score.ft?.[0]) || 0;
+      const ftScore2 = parseInt(m.score.ft?.[1]) || 0;
+      
+      // Check if the loser lost on penalties
+      if(ftScore1 === ftScore2 && m.score.pen){
+        const penScore1 = parseInt(m.score.pen[0]) || 0;
+        const penScore2 = parseInt(m.score.pen[1]) || 0;
+        if(penScore1 !== penScore2){
+          // Lost on penalties - always mark as eliminated
+          teamState[loser].stage = loserStage;
+        }
+      } else {
+        teamState[loser].stage = loserStage;
+      }
     }
   });
 
@@ -796,6 +812,21 @@ function renderMatches(){
       const isT1Elim = dataLoaded && sm1.eliminated;
       const isT2Elim = dataLoaded && sm2.eliminated;
 
+      // Build score display with penalty info
+      let scoreDisplay = 'vs';
+      let penaltyDisplay = '';
+      if(played){
+        const ftScore1 = m.score.ft[0];
+        const ftScore2 = m.score.ft[1];
+        scoreDisplay = `${ftScore1} - ${ftScore2}`;
+        
+        if(m.score.pen){
+          const penScore1 = m.score.pen[0];
+          const penScore2 = m.score.pen[1];
+          penaltyDisplay = `<div class="mpenalty">(p) ${penScore1} - ${penScore2}</div>`;
+        }
+      }
+
       const card=document.createElement('div');
       card.className='match-card'+(played?' played':'');
       card.innerHTML=`
@@ -808,7 +839,7 @@ function renderMatches(){
         </div>
         <div class="mdate">
           ${played
-            ?`<div class="mscore">${m.score.ft[0]} - ${m.score.ft[1]}</div>`
+            ?`<div class="mscore">${scoreDisplay}</div>${penaltyDisplay}`
             :`<div class="mscore pending">vs</div>`}
           <div class="mmeta">${m.group ? m.group.replace('Group ','Grp ') : (m.round||'Knockout')} · ${(m.ground||'').split('(')[0].trim()}</div>
         </div>
