@@ -159,10 +159,10 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
       <div class="key-row"><span>Qualify for knockouts</span><em>+3 bonus</em></div>
       <div class="key-row"><span>Reach Ro16</span><em>+7 bonus total</em></div>
       <div class="key-row"><span>Reach Quarter-finals</span><em>+12 bonus total</em></div>
-      <div class="key-row"><span>4th place</span><em>+19 bonus total</em></div>
-      <div class="key-row"><span>3rd place 🥉</span><em>+20 bonus total</em></div>
-      <div class="key-row"><span>Runner-up 🥈</span><em>+21 bonus total</em></div>
-      <div class="key-row"><span>Winner 🏆</span><em>+22 bonus total</em></div>
+      <div class="key-row"><span>4th place (after final)</span><em>+19 bonus total</em></div>
+      <div class="key-row"><span>3rd place (after final)</span><em>+20 bonus total</em></div>
+      <div class="key-row"><span>Runner-up (after final)</span><em>+21 bonus total</em></div>
+      <div class="key-row"><span>Winner 🏆 (after final)</span><em>+22 bonus total</em></div>
     </div>
   </div>
 </div>
@@ -264,11 +264,14 @@ const NAME_MAP = {
 // Update this as pen/AET results happen
 // ═══════════════════════════════════════
 const PEN_AET_WINNERS = {
-  "germany|paraguay":    "paraguay",    // Ro32: 1-1 aet, Paraguay win pens
-  "morocco|netherlands": "morocco",     // Ro32: 1-1 aet, Morocco win pens
-  "australia|egypt":     "egypt",       // Ro32: 1-1 aet, Egypt win pens
-  "argentina|cabo-verde":"argentina",   // Ro32: 3-2 aet (no pens)
-  "belgium|senegal":     "belgium",     // Ro32: 3-2 aet (no pens)
+  // Ro32 — pens/AET
+  "germany|paraguay":      "paraguay",    // 1-1 aet, Paraguay 4-3 pens
+  "morocco|netherlands":   "morocco",     // 1-1 aet, Morocco 3-2 pens
+  "australia|egypt":       "egypt",       // 1-1 aet, Egypt 4-2 pens
+  "argentina|cabo-verde":  "argentina",   // 3-2 aet
+  "belgium|senegal":       "belgium",     // 3-2 aet
+  // Ro16 — pens
+  "colombia|switzerland":  "switzerland", // 0-0 aet, Switzerland 4-3 pens
 };
 
 function getPenAetWinner(id1, id2){
@@ -311,7 +314,8 @@ let matchData  = [];
 let dataLoaded = false;
 
 function initState(){
-  for(let i=1;i<=9;i++) localStorage.removeItem('wc2026_v'+i);
+  // Wipe ALL wc2026 keys from localStorage to prevent any stale state
+  Object.keys(localStorage).filter(k=>k.startsWith('wc2026')).forEach(k=>localStorage.removeItem(k));
   TEAMS.forEach(t=>{ teamState[t.id]={groupPts:0,gamesPlayed:0,stage:'out',lastResult:''}; });
 }
 
@@ -457,10 +461,11 @@ function processMatches(matches){
     if(!result) return;
     const {winner,loser}=result;
 
-    if(round.includes('final')&&!round.includes('third')&&!round.includes('3rd')&&!round.includes('bronze')){
-      teamState[winner].stage='winner'; teamState[loser].stage='final';
-    } else if(round.includes('third')||round.includes('3rd')||round.includes('bronze')){
+    if(round.includes('third')||round.includes('3rd')||round.includes('bronze')){
       teamState[winner].stage='3rd'; teamState[loser].stage='4th';
+    } else if(round.includes('final')&&!round.includes('quarter')&&!round.includes('semi')){
+      // Only true final — not quarter-final or semi-final
+      teamState[winner].stage='winner'; teamState[loser].stage='final';
     } else {
       setIfHigher(winner,nextStage); teamState[loser].stage=loserStage;
     }
