@@ -324,7 +324,11 @@ function initState(){
 // ═══════════════════════════════════════
 function teamTotal(id){
   const s=teamState[id]||{groupPts:0,stage:'out'};
-  return (parseInt(s.groupPts)||0)+(STAGE_PTS[s.stage]||0);
+  const stage=s.stage||'out';
+  const TOP4_STAGES=['4th','3rd','final','winner'];
+  // Only award top-4 bonus if explicitly finished; quarters and below use normal pts
+  const stagePts = TOP4_STAGES.includes(stage) ? (STAGE_PTS[stage]||0) : Math.min(STAGE_PTS[stage]||0, 12);
+  return (parseInt(s.groupPts)||0) + stagePts;
 }
 function playerTotal(idx){ return TEAMS.filter(t=>t.owner===idx).reduce((sum,t)=>sum+teamTotal(t.id),0); }
 function getRankings(){
@@ -334,6 +338,7 @@ function getRankings(){
 function playerBreakdown(idx){
   const teams=TEAMS.filter(t=>t.owner===idx);
   let grp=0,ro32=0,ro16=0,qtr=0,top4=0;
+  const TOP4_STAGES=['4th','3rd','final','winner'];
   teams.forEach(t=>{
     const s=teamState[t.id]?.stage||'out';
     const r=stageRank(s);
@@ -341,7 +346,8 @@ function playerBreakdown(idx){
     if(r>=2) ro32+=3;
     if(r>=4) ro16+=4;
     if(r>=6) qtr+=5;
-    if(r>=8) top4+=(STAGE_PTS[s]||0)-12;
+    // Only award top4 bonus if explicitly set to a finished final stage
+    if(TOP4_STAGES.includes(s)) top4+=(STAGE_PTS[s]||0)-12;
   });
   return {grp,ro32,ro16,qtr,top4};
 }
